@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <title>Signup</title>
+</head>
+<body>
+  <div class="container">
+    <h2>Sign Up</h2>
+    <form method="POST">
+      <label for="email">Email</label>
+      <input id="email" name="email" placeholder="Enter your email" required>
+      
+      <label for="password">Password</label>
+      <input id="password" type="password" name="password" placeholder="Create a password" required>
+      
+      <button type="submit">Create Account</button>
+    </form>
+    
+    <p>Already have an account? <a href="/login">Log in</a></p>
+    
+    {% if msg %}
+      <p class="message {% if 'error' in msg.lower() %}error{% endif %}">{{ msg }}</p>
+    {% endif %}
+  </div>
+  
+  <script>
+    // Add animation to form elements
+    document.addEventListener('DOMContentLoaded', function() {
+      const formElements = document.querySelectorAll('input, button');
+      formElements.forEach((element, index) => {
+        element.style.opacity = '0';
+        element.style.transform = 'translateY(20px)';
+        element.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        element.style.transitionDelay = `${index * 0.1}s`;
+        
+        setTimeout(() => {
+          element.style.opacity = '1';
+          element.style.transform = 'translateY(0)';
+        }, 100);
+      });
+    });
+  </script>
+</body>
+</html>

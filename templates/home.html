@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <title>Your Files</title>
+  <style>
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .navigation {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .btn-dashboard {
+      display: inline-flex;
+      align-items: center;
+      padding: 10px 16px;
+      background: #2d2d2d;
+      color: #e0e0e0;
+      border-radius: 6px;
+      text-decoration: none;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .btn-dashboard:hover {
+      background: rgba(96, 165, 250, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .btn-dashboard::after {
+      display: none;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 600;
+      color: #60a5fa;
+      margin-bottom: 0;
+      letter-spacing: 0.5px;
+    }
+
+    .download-link {
+      color: #60a5fa;
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      background: rgba(96, 165, 250, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .download-link:hover {
+      background: rgba(96, 165, 250, 0.2);
+    }
+
+    .download-link::after {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2 class="page-title">Your Files</h2>
+      <div class="navigation">
+        <a href="/dashboard" class="btn-dashboard">Back to Dashboard</a>
+        <a href="/logout" class="btn-logout">Logout</a>
+      </div>
+    </div>
+
+    <form method="POST" action="/upload" enctype="multipart/form-data" class="upload-form">
+      <input type="file" name="file" class="file-input">
+      <button type="submit" class="upload-btn">Upload File</button>
+    </form>
+
+    {% if msg %}
+      <p class="message {% if 'error' in msg.lower() %}error{% endif %}">{{ msg }}</p>
+    {% endif %}
+
+    {% if files %}
+      <h3>Your Files</h3>
+      <ul class="file-list">
+        {% for file in files %}
+          <li>
+            <span class="file-name">{{ file.filename }}</span>
+            <div class="file-actions">
+              <a href="/download/{{ file._id }}" class="download-link">Download</a>
+              <button onclick="deleteFile('{{ file._id }}')" class="delete-btn">Delete</button>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No files uploaded yet.</p>
+    {% endif %}
+  </div>
+
+  <script>
+    function deleteFile(fileId) {
+      if (confirm('Are you sure you want to delete this file?')) {
+        fetch(`/delete/${fileId}`, { method: 'DELETE' })
+          .then(response => {
+            if (!response.ok) throw new Error('Failed to delete');
+            return response.text();
+          })
+          .then(data => {
+            showNotification(data);
+            setTimeout(() => location.reload(), 1000);
+          })
+          .catch(err => {
+            showNotification('Error deleting file');
+            console.error(err);
+          });
+      }
+    }
+
+    function showNotification(message) {
+      const notification = document.createElement('div');
+      notification.textContent = message;
+      Object.assign(notification.style, {
+        position: 'fixed',
+        bottom: '20px',
+        right: '20px',
+        padding: '15px 20px',
+        background: 'linear-gradient(45deg, #3b82f6, #60a5fa)',
+        color: 'white',
+        borderRadius: '8px',
+        boxShadow: '0 8px 30px rgba(0, 0, 0, 0.3)',
+        zIndex: '1000',
+        opacity: '0',
+        transform: 'translateY(20px)',
+        transition: 'opacity 0.3s ease, transform 0.3s ease'
+      });
+      document.body.appendChild(notification);
+      setTimeout(() => {
+        notification.style.opacity = '1';
+        notification.style.transform = 'translateY(0)';
+      }, 10);
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateY(20px)';
+        setTimeout(() => document.body.removeChild(notification), 300);
+      }, 1500);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const listItems = document.querySelectorAll('li');
+      listItems.forEach((item, index) => {
+        item.style.opacity = '0';
+        item.style.transform = 'translateX(-20px)';
+        item.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        item.style.transitionDelay = `${index * 0.1}s`;
+
+        setTimeout(() => {
+          item.style.opacity = '1';
+          item.style.transform = 'translateX(0)';
+        }, 100);
+      });
+    });
+  </script>
+</body>
+</html>
